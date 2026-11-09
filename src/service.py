@@ -21,9 +21,9 @@ class Account:
         if amount <= Decimal(0):
             raise ValueError("Deposit amount must be positive")
 
-        # with self._lock:
-        #     if current_transactions != len(self._transactions):
-        #         raise ValueError("Concurrent transactions detected. Please retry.")
+        with self._lock:
+            if current_transactions != len(self._transactions):
+                raise ValueError("Concurrent transactions detected. Please retry.")
 
         self._current_balance = round(self._current_balance + amount, 2)
         txn = Transaction(amount, TransactionType.DEPOSIT, self._current_balance, transaction_date)
@@ -34,9 +34,9 @@ class Account:
         if amount <= Decimal(0):
             raise ValueError("Withdrawal amount must be positive")
 
-        # with self._lock:
-        #     if current_transactions != len(self._transactions):
-        #         raise ValueError("Concurrent transactions detected. Please retry.")
+        with self._lock:
+            if current_transactions != len(self._transactions):
+                raise ValueError("Concurrent transactions detected. Please retry.")
 
         self._current_balance = round(self._current_balance - amount, 2)
         txn = Transaction(amount, TransactionType.WITHDRAWAL, self._current_balance, transaction_date)
