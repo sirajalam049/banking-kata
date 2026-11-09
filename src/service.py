@@ -1,8 +1,12 @@
 from datetime import datetime, timezone
 from decimal import Decimal
+from time import sleep
 from typing import List
 from threading import Lock
 from src.model import Transaction, TransactionType
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 class Account:
 
@@ -17,27 +21,23 @@ class Account:
         self._last_transaction_date = datetime.now(timezone.utc)
         self._lock = Lock()
     
-    def deposit(self, amount: Decimal, current_transactions: int, transaction_date: datetime = datetime.now(timezone.utc)) -> Transaction:
+    def deposit(self, amount: Decimal, prev_balance: Decimal, transaction_date: datetime = datetime.now(timezone.utc)) -> Transaction:
         if amount <= Decimal(0):
             raise ValueError("Deposit amount must be positive")
-
-        with self._lock:
-            if current_transactions != len(self._transactions):
-                raise ValueError("Concurrent transactions detected. Please retry.")
-
+        sleep(0.01) # Simulating processing time
+        if prev_balance != self._current_balance:
+            raise ValueError(f"Concurrent transactions detected. Please retry")
         self._current_balance = round(self._current_balance + amount, 2)
         txn = Transaction(amount, TransactionType.DEPOSIT, self._current_balance, transaction_date)
         self._transactions.append(txn)
         return txn
 
-    def withdraw(self, amount: Decimal, current_transactions: int, transaction_date: datetime = datetime.now(timezone.utc)) -> Transaction:
+    def withdraw(self, amount: Decimal, prev_balance: Decimal, transaction_date: datetime = datetime.now(timezone.utc)) -> Transaction:
         if amount <= Decimal(0):
             raise ValueError("Withdrawal amount must be positive")
-
-        with self._lock:
-            if current_transactions != len(self._transactions):
-                raise ValueError("Concurrent transactions detected. Please retry.")
-
+        sleep(0.01) # Simulating processing time
+        if prev_balance != self._current_balance:
+            raise ValueError(f"Concurrent transactions detected. Please retry.")
         self._current_balance = round(self._current_balance - amount, 2)
         txn = Transaction(amount, TransactionType.WITHDRAWAL, self._current_balance, transaction_date)
         self._transactions.append(txn)
