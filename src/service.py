@@ -92,14 +92,14 @@ class Account:
         return txn
 
     def print_statement(self) -> str:
-        header = "\nDate\t\t\tAmount\t\t\tBalance"
+        header = f"{'Date':<15} {'Amount':<10} {'Balance':<10}"
         transactions = []
         def _format_transaction(txn: Transaction) -> str:
             sign = "+" if txn.transaction_type == TransactionType.DEPOSIT else "-"
             txn_date = txn.transaction_date.strftime('%d.%m.%Y')
             txn_amount = f"{sign} {txn.amount:.2f}"
             txn_balance = f"{txn.running_balance:.2f}"
-            return f"{txn_date}\t\t{txn_amount}\t\t{txn_balance}"
+            return f"{txn_date:<15} {txn_amount:<10} {txn_balance:<10}"
 
         for txn in self._transactions:
             transactions.append(_format_transaction(txn))

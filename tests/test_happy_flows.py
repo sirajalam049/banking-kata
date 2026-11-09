@@ -47,9 +47,9 @@ def test_print_statement():
     transaction_date = datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
     acc.apply_deposit(Decimal(100), transaction_date)
     acc.apply_withdraw(Decimal(50), transaction_date)
-    header = "\nDate\t\t\tAmount\t\t\tBalance"
+    header = f"{'Date':<15} {'Amount':<10} {'Balance':<10}"
     transactions = [
-        "01.01.2026\t\t+ 100.00\t\t100.00",
-        "01.01.2026\t\t- 50.00\t\t50.00"
+        f"{transaction_date.strftime('%d.%m.%Y'):<15} {'+ 100.00':<10} {'100.00':<10}",
+        f"{transaction_date.strftime('%d.%m.%Y'):<15} {'- 50.00':<10} {'50.00':<10}",
     ]
-    assert acc.print_statement() == header + "\n" + "\n".join(transactions)
+    assert acc.print_statement() == f"{header}\n{transactions[0]}\n{transactions[1]}"
