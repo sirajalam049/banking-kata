@@ -3,6 +3,7 @@ from decimal import Decimal
 from time import sleep
 from typing import List
 from threading import Lock
+from src.exceptions import *
 from src.model import Transaction, TransactionType
 from logging import getLogger
 
@@ -54,7 +55,7 @@ class Account:
                 if version == self._acc_version:
                     return self.apply_deposit(amount, transaction_date)
                 logger.info(f"Retrying {_} of {self.MAX_RETRIES}")
-        raise ValueError(f"Failed to deposit after {self.MAX_RETRIES} retries") # pragma: no cover
+        raise FailedToApplyOperationAfterRetriesError(f"Failed to deposit after {self.MAX_RETRIES} retries") # pragma: no cover
 
     def withdraw_optimistic_with_self_retry(self, amount: Decimal, transaction_date: datetime) -> Transaction:
         for _ in range(1, self.MAX_RETRIES + 1):
@@ -64,11 +65,11 @@ class Account:
                 if version == self._acc_version:
                     return self.apply_withdraw(amount, transaction_date)
                 logger.info(f"Retrying {_} of {self.MAX_RETRIES}")
-        raise ValueError(f"Failed to withdraw after {self.MAX_RETRIES} retries") # pragma: no cover
+        raise FailedToApplyOperationAfterRetriesError(f"Failed to withdraw after {self.MAX_RETRIES} retries") # pragma: no cover
 
     def apply_deposit(self, amount: Decimal, transaction_date: datetime) -> Transaction:
         if amount <= Decimal(0):
-            raise ValueError("Deposit amount must be positive")
+            raise DepositAmountMustBePositiveError("Deposit amount must be positive")
         current_balance = self._current_balance
         self.simulate_processing_delay()
         self._acc_version += 1
@@ -79,11 +80,11 @@ class Account:
 
     def apply_withdraw(self, amount: Decimal, transaction_date: datetime) -> Transaction:
         if amount <= Decimal(0):
-            raise ValueError("Withdrawal amount must be positive")
+            raise WithdrawalAmountMustBePositiveError("Withdrawal amount must be positive")
         current_balance = self._current_balance
         self.simulate_processing_delay()
         if amount > current_balance:
-            raise ValueError("Insufficient funds")
+            raise InsufficientFundsError("Insufficient funds")
         self._current_balance = round(current_balance - amount, 2)
         self._acc_version += 1
         txn = Transaction(amount, TransactionType.WITHDRAWAL, self._current_balance, transaction_date)
