@@ -76,7 +76,7 @@ def test_concurrent_optimistic_operations():
     with pytest.raises(ValueError) as e: # Only one transaction should be successful
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             list(executor.map(lambda amount: acc.deposit(amount, acc._acc_version, transaction_date), [Decimal(100), Decimal(50)]))
-    assert acc.current_balance == Decimal(50) # Only one transaction should be successful
+    assert acc.current_balance in [Decimal(50), Decimal(100)] # Only one transaction should be successful
     assert len(acc.transactions) == 1 # Only one transaction should be successful
 
 def test_concurrent_optimistic_deposit_operations_with_self_retry():

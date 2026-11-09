@@ -25,15 +25,15 @@ class Account:
         self._acc_version = 0
         self._processing_delay = processing_delay
 
-    def deposit_pessimistic(self, amount: Decimal, transaction_date: datetime = datetime.now(timezone.utc)) -> Transaction:
+    def deposit_pessimistic(self, amount: Decimal, transaction_date: datetime) -> Transaction:
         with self._lock:
             return self.deposit(amount, self._acc_version, transaction_date)
 
-    def withdraw_pessimistic(self, amount: Decimal, transaction_date: datetime = datetime.now(timezone.utc)) -> Transaction:
+    def withdraw_pessimistic(self, amount: Decimal, transaction_date: datetime) -> Transaction:
         with self._lock:
             return self.withdraw(amount, self._acc_version, transaction_date)
 
-    def deposit_optimistic_with_self_retry(self, amount: Decimal, transaction_date: datetime = datetime.now(timezone.utc)) -> Transaction:
+    def deposit_optimistic_with_self_retry(self, amount: Decimal, transaction_date: datetime) -> Transaction:
         for _ in range(1, self.MAX_RETRIES + 1):
             try:
                 return self.deposit(amount, self._acc_version, transaction_date)
@@ -42,7 +42,7 @@ class Account:
                 continue
         raise ValueError(f"Failed to deposit after {self.MAX_RETRIES} retries") # pragma: no cover
 
-    def withdraw_optimistic_with_self_retry(self, amount: Decimal, transaction_date: datetime = datetime.now(timezone.utc)) -> Transaction:
+    def withdraw_optimistic_with_self_retry(self, amount: Decimal, transaction_date: datetime) -> Transaction:
         for _ in range(1, self.MAX_RETRIES + 1):
             try:
                 return self.withdraw(amount, self._acc_version, transaction_date)
@@ -51,7 +51,7 @@ class Account:
                 continue
         raise ValueError(f"Failed to withdraw after {self.MAX_RETRIES} retries") # pragma: no cover
 
-    def deposit(self, amount: Decimal, version: int, transaction_date: datetime = datetime.now(timezone.utc)) -> Transaction:
+    def deposit(self, amount: Decimal, version: int, transaction_date: datetime) -> Transaction:
         if amount <= Decimal(0):
             raise ValueError("Deposit amount must be positive")
         if self._processing_delay:
@@ -65,7 +65,7 @@ class Account:
             self._transactions.append(txn)
             return txn
 
-    def withdraw(self, amount: Decimal, version: int, transaction_date: datetime = datetime.now(timezone.utc)) -> Transaction:
+    def withdraw(self, amount: Decimal, version: int, transaction_date: datetime) -> Transaction:
         if amount <= Decimal(0):
             raise ValueError("Withdrawal amount must be positive")
         if self._processing_delay:
