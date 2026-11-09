@@ -15,4 +15,4 @@ class Transaction:
     amount: Decimal
     transaction_type: TransactionType
     running_balance: Decimal
-    transaction_date: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    transaction_date: datetime
