@@ -22,7 +22,7 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov=. --cov-report=html"
+addopts = "--cov=. --cov-report=html -s --log-cli-level=INFO"
 pythonpath = "."
 
 [tool.coverage.html]
