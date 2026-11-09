@@ -56,9 +56,9 @@ class Account:
             raise ValueError("Deposit amount must be positive")
         if self._processing_delay:
             sleep(self._processing_delay)
-        if version != self._acc_version:
-            raise ValueError(f"Concurrent transactions detected. Please retry")
         with self._lock: #Making read and write atomic
+            if version != self._acc_version:
+                raise ValueError(f"Concurrent transactions detected. Please retry")
             self._current_balance = round(self._current_balance + amount, 2)
             self._acc_version += 1
             txn = Transaction(amount, TransactionType.DEPOSIT, self._current_balance, transaction_date)
@@ -70,11 +70,11 @@ class Account:
             raise ValueError("Withdrawal amount must be positive")
         if self._processing_delay:
             sleep(self._processing_delay)
-        if amount > self._current_balance:
-            raise ValueError("Insufficient funds")
-        if version != self._acc_version:
-            raise ValueError(f"Concurrent transactions detected. Please retry.")
         with self._lock: #Making read and write atomic
+            if amount > self._current_balance:
+                raise ValueError("Insufficient funds")
+            if version != self._acc_version:
+                raise ValueError(f"Concurrent transactions detected. Please retry.")
             self._current_balance = round(self._current_balance - amount, 2)
             self._acc_version += 1
             txn = Transaction(amount, TransactionType.WITHDRAWAL, self._current_balance, transaction_date)
