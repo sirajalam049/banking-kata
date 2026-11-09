@@ -25,14 +25,17 @@ class Account:
         self._acc_version = 0
         self._processing_delay = processing_delay
 
+    def simulate_processing_delay(self):
+        if self._processing_delay:
+            sleep(self._processing_delay)
+
     def deposit_pessimistic(self, amount: Decimal, transaction_date: datetime) -> Transaction:
         with self._lock:
             return self.apply_deposit(amount, transaction_date)
 
     def withdraw_pessimistic(self, amount: Decimal, transaction_date: datetime) -> Transaction:
         with self._lock:
-            if self._processing_delay:
-                sleep(self._processing_delay)
+            self.simulate_processing_delay()
             return self.apply_withdraw(amount, transaction_date)
 
     def deposit_optimistic_without_self_retry(self, amount: Decimal, transaction_date: datetime) -> Transaction:
@@ -46,8 +49,7 @@ class Account:
     def deposit_optimistic_with_self_retry(self, amount: Decimal, transaction_date: datetime) -> Transaction:
         for _ in range(1, self.MAX_RETRIES + 1):
             version = self._acc_version
-            if self._processing_delay:
-                sleep(self._processing_delay)
+            self.simulate_processing_delay()
             with self._lock: #Making read and write atomic
                 if version == self._acc_version:
                     return self.apply_deposit(amount, transaction_date)
@@ -57,8 +59,7 @@ class Account:
     def withdraw_optimistic_with_self_retry(self, amount: Decimal, transaction_date: datetime) -> Transaction:
         for _ in range(1, self.MAX_RETRIES + 1):
             version = self._acc_version
-            if self._processing_delay:
-                sleep(self._processing_delay)
+            self.simulate_processing_delay()
             with self._lock: #Making read and write atomic
                 if version == self._acc_version:
                     return self.apply_withdraw(amount, transaction_date)
@@ -69,8 +70,7 @@ class Account:
         if amount <= Decimal(0):
             raise ValueError("Deposit amount must be positive")
         current_balance = self._current_balance
-        if self._processing_delay:
-            sleep(self._processing_delay)
+        self.simulate_processing_delay()
         self._acc_version += 1
         self._current_balance = round(current_balance + amount, 2)
         txn = Transaction(amount, TransactionType.DEPOSIT, self._current_balance, transaction_date)
@@ -81,8 +81,7 @@ class Account:
         if amount <= Decimal(0):
             raise ValueError("Withdrawal amount must be positive")
         current_balance = self._current_balance
-        if self._processing_delay:
-            sleep(self._processing_delay)
+        self.simulate_processing_delay()
         if amount > current_balance:
             raise ValueError("Insufficient funds")
         self._current_balance = round(current_balance - amount, 2)
