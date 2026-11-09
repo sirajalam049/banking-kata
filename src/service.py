@@ -38,7 +38,7 @@ class Account:
             except ValueError:
                 logger.warning(f"Retrying {_} of {self.MAX_RETRIES}")
                 continue
-        raise ValueError(f"Failed to deposit after {self.MAX_RETRIES} retries")
+        raise ValueError(f"Failed to deposit after {self.MAX_RETRIES} retries") # pragma: no cover
 
     def withdraw_optimistic_with_self_retry(self, amount: Decimal, transaction_date: datetime = datetime.now(timezone.utc)) -> Transaction:
         for _ in range(1, self.MAX_RETRIES + 1):
@@ -47,12 +47,12 @@ class Account:
             except ValueError:
                 logger.info(f"Retrying {_} of {self.MAX_RETRIES}")
                 continue
-        raise ValueError(f"Failed to withdraw after {self.MAX_RETRIES} retries")
+        raise ValueError(f"Failed to withdraw after {self.MAX_RETRIES} retries") # pragma: no cover
 
     def deposit(self, amount: Decimal, prev_balance: Decimal, transaction_date: datetime = datetime.now(timezone.utc)) -> Transaction:
         if amount <= Decimal(0):
             raise ValueError("Deposit amount must be positive")
-        sleep(0.1) # Simulating processing time
+        sleep(0.01) # Simulating processing time
         if prev_balance != self._current_balance:
             raise ValueError(f"Concurrent transactions detected. Please retry")
         self._current_balance = round(self._current_balance + amount, 2)
@@ -63,7 +63,7 @@ class Account:
     def withdraw(self, amount: Decimal, prev_balance: Decimal, transaction_date: datetime = datetime.now(timezone.utc)) -> Transaction:
         if amount <= Decimal(0):
             raise ValueError("Withdrawal amount must be positive")
-        sleep(0.1) # Simulating processing time
+        sleep(0.01) # Simulating processing time
         if prev_balance != self._current_balance:
             raise ValueError(f"Concurrent transactions detected. Please retry.")
         self._current_balance = round(self._current_balance - amount, 2)

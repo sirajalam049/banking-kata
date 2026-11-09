@@ -70,7 +70,7 @@ def test_concurrent_optimistic_operations():
     assert acc.current_balance != Decimal(150) # Only one transaction should be successful
     assert len(acc.transactions) == 1 # Only one transaction should be successful
 
-def test_concurrent_optimistic_operations_with_self_retry():
+def test_concurrent_optimistic_deposit_operations_with_self_retry():
     acc = Account()
     transaction_date = datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -78,13 +78,32 @@ def test_concurrent_optimistic_operations_with_self_retry():
     assert acc.current_balance == Decimal(150) # Both transactions should be successful
     assert len(acc.transactions) == 2 # Both transactions should be successful
 
-def test_concurrent_pessimistic_operations():
+def test_concurrent_optimistic_withdraw_operations_with_self_retry():
+    acc = Account()
+    transaction_date = datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+    acc.deposit(Decimal(500), acc.current_balance, transaction_date=transaction_date)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        list(executor.map(lambda amount: acc.withdraw_optimistic_with_self_retry(amount, transaction_date), [Decimal(100), Decimal(50)]))
+    assert acc.current_balance == Decimal(350) # Both transactions should be successful
+    assert len(acc.transactions) == 3 # Both transactions should be successful
+
+
+def test_concurrent_pessimistic_deposit_operations():
     acc = Account()
     transaction_date = datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         list(executor.map(lambda amount: acc.deposit_pessimistic(amount, transaction_date), [Decimal(100), Decimal(50)]))
     assert acc.current_balance == Decimal(150) # Both transactions should be successful
     assert len(acc.transactions) == 2 # Both transactions should be successful
+
+def test_concurrent_pessimistic_withdraw_operations():
+    acc = Account()
+    transaction_date = datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+    acc.deposit(Decimal(500), acc.current_balance, transaction_date=transaction_date)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        list(executor.map(lambda amount: acc.withdraw_pessimistic(amount, transaction_date), [Decimal(100), Decimal(50)]))
+    assert acc.current_balance == Decimal(350) # Both transactions should be successful
+    assert len(acc.transactions) == 3 # Both transactions should be successful
 
 def test_print_statement():
     acc = Account()
